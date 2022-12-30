@@ -20,7 +20,7 @@ import java.util.Map;
 
 /**
  * Invocation. (API, Prototype, NonThreadSafe)
- *
+ * 是一个会话域，保存本次调用过程中的一些上下文信息
  * @serial Don't change the class name and package name.
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
  * @see org.apache.dubbo.rpc.RpcInvocation

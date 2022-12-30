@@ -54,7 +54,7 @@ import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.addApplicatio
 
 /**
  * ServiceFactoryBean
- *
+ * 这个类的作用是用来进行服务暴露，把此服务暴露到注册中心
  * @export
  */
 public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean,
@@ -111,6 +111,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             if (logger.isInfoEnabled()) {
                 logger.info("The service ready on spring started. service: " + getInterface());
             }
+            //进行暴露
             export();
         }
     }

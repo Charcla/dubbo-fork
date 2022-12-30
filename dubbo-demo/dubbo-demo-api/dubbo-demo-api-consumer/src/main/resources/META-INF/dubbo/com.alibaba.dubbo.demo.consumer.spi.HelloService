@@ -1,0 +1,2 @@
+dogHello=org.apache.dubbo.demo.consumer.spi.DogHelloService
+personHello=org.apache.dubbo.demo.consumer.spi.PersonHelloService

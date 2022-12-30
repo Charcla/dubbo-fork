@@ -764,6 +764,7 @@ public final class StringUtils {
         return buf.toString();
     }
 
+    //将一个字符串重新拼接,如果有大写，则把大写转为小写，并且在这个小写字符前面加一个split
     public static String camelToSplitName(String camelName, String split) {
         if (isEmpty(camelName)) {
             return camelName;

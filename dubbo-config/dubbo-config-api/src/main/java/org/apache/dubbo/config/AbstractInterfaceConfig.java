@@ -320,7 +320,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      *
      * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
-     *
+     * 加载注册中心，根据注册中心的配置和协议配置，导出服务的各种信息
      * @param provider whether it is the provider side
      * @return
      */
@@ -328,20 +328,25 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         // check && override if necessary
         List<URL> registryList = new ArrayList<URL>();
         if (CollectionUtils.isNotEmpty(registries)) {
+            //遍历每个注册中心配置
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
+                    //如果未配置地址，则指向本地
                     address = ANYHOST_VALUE;
                 }
                 if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
                     Map<String, String> map = new HashMap<String, String>();
+                    //将ApplicationConfig中的配置信息放入map
                     appendParameters(map, application);
+                    //将RegistryConfig中的配置信息放入map
                     appendParameters(map, config);
                     map.put(PATH_KEY, RegistryService.class.getName());
                     appendRuntimeParameters(map);
                     if (!map.containsKey(PROTOCOL_KEY)) {
                         map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                     }
+                    //把参数根据地址组成新的协议
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
@@ -407,6 +412,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return null;
     }
 
+    //添加一些运行时参数，比如，dubbo协议版本，时间戳等
     static void appendRuntimeParameters(Map<String, String> map) {
         map.put(DUBBO_VERSION_KEY, Version.getProtocolVersion());
         map.put(RELEASE_KEY, Version.getVersion());

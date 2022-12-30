@@ -157,6 +157,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
             if (!CollectionUtils.isEmpty(beanDefinitionHolders)) {
 
                 for (BeanDefinitionHolder beanDefinitionHolder : beanDefinitionHolders) {
+                    //这里把扫描出来的添加了@Service注解的
                     registerServiceBean(beanDefinitionHolder, registry, scanner);
                 }
 

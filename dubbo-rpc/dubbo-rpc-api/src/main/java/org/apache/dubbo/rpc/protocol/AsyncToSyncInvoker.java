@@ -51,7 +51,7 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
     public Result invoke(Invocation invocation) throws RpcException {
         Result asyncResult = invoker.invoke(invocation);
 
-        try {
+        try {//这里进行同步异步的逻辑处理
             if (InvokeMode.SYNC == ((RpcInvocation) invocation).getInvokeMode()) {
                 asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
             }

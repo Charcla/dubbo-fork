@@ -22,14 +22,20 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.rpc.cluster.router.mock.MockInvokersSelector;
 
-public class Application {
-    public static void main(String[] args) {
+public class Application  {
+
+    public static void main(String[] args) throws InterruptedException {
         ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
         reference.setApplication(new ApplicationConfig("dubbo-demo-api-consumer"));
-        reference.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
+//        reference.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
+//        reference.setRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
+        reference.setRegistry(new RegistryConfig("nacos://81.68.105.245:8848"));
         reference.setInterface(DemoService.class);
+        reference.setCheck(false);
         DemoService service = reference.get();
+
         String message = service.sayHello("dubbo");
         System.out.println(message);
     }

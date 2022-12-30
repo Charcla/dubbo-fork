@@ -83,7 +83,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
  * <li>home/user1/router.js?type=script <br>
  * for this case, url protocol = null, url host = home, url path = user1/router.js
  * </ul>
- *
+ * 这个url不是传统意思上的地址，这个是一个资源类吧，把啥信息配置都往里面放,用这个类来描述元数据，配置信息
+ * 比如url是dubbo开头，表示这是一个dubbo协议的服务
+ * 比如url是zookeeper开头，表示是一个zookeeper注册中心
+ * 比如url是consumer开头，表示是一个消费者
  * @see java.net.URL
  * @see java.net.URI
  */

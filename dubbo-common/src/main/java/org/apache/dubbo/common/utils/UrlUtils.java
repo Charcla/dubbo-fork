@@ -155,7 +155,7 @@ public class UrlUtils {
         }
         return u;
     }
-
+    //把地址加上参数配置组成url
     public static List<URL> parseURLs(String address, Map<String, String> defaults) {
         if (address == null || address.length() == 0) {
             return null;

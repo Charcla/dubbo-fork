@@ -154,29 +154,36 @@ public abstract class AbstractConfig implements Serializable {
         appendParameters(parameters, config, null);
     }
 
+    //根据类上所有public类型解的get方法上取值放到map中
     @SuppressWarnings("unchecked")
     protected static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
         if (config == null) {
             return;
         }
+        //反射获取所有方法
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
             try {
                 String name = method.getName();
+                //判断是不是get或者is并且是public方法
                 if (MethodUtils.isGetter(method)) {
                     Parameter parameter = method.getAnnotation(Parameter.class);
+                    //返回值类型是一个对象类型，不是stirng或者其他基本类型｜｜这个参数配置了忽略，就不往map放值
                     if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
                         continue;
                     }
                     String key;
+                    //获取键值
                     if (parameter != null && parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
                         key = calculatePropertyFromGetter(name);
                     }
+                    //执行config对象的method方法，获取返回值
                     Object value = method.invoke(config);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
+                        //需要转义
                         if (parameter != null && parameter.escaped()) {
                             str = URL.encode(str);
                         }

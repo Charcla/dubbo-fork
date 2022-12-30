@@ -24,22 +24,47 @@ import java.lang.annotation.Target;
 
 /**
  * Parameter
+ * 用于url的参数拼接
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface Parameter {
 
+    /**
+     * 健
+     * @return
+     */
     String key() default "";
 
+    /**
+     * 是否必须
+     * @return
+     */
     boolean required() default false;
 
+    /**
+     * 是否忽略
+     * @return
+     */
     boolean excluded() default false;
 
+    /**
+     * 是否转义
+     * @return
+     */
     boolean escaped() default false;
 
+    /**
+     * 是否为属性
+     * @return
+     */
     boolean attribute() default false;
 
+    /**
+     *
+     * @return
+     */
     boolean append() default false;
 
     /**

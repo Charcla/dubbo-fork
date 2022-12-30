@@ -25,6 +25,7 @@ import java.util.Map;
 
 /**
  * ProviderModel which is about published services
+ * 服务模型
  */
 public class ProviderModel {
     private final String serviceName;
@@ -76,7 +77,7 @@ public class ProviderModel {
         }
         return null;
     }
-
+    //暴露出来服务的方法
     private void initMethod() {
         Method[] methodsToExport = null;
         methodsToExport = this.serviceInterfaceClass.getMethods();

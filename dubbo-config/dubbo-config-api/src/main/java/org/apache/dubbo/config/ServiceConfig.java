@@ -147,16 +147,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     /**
      * The interface name of the exported service
+     * 暴露出来的服务接口名称
      */
     private String interfaceName;
 
     /**
      * The interface class of the exported service
+     * 暴露出来的服务接口
      */
     private Class<?> interfaceClass;
 
     /**
      * The reference of the interface implementation
+     * 指向真正的服务实现类
      */
     private T ref;
 
@@ -166,7 +169,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private String path;
 
     /**
-     * The method configuration
+     * The method configuration 方法级别的配置
      */
     private List<MethodConfig> methods;
 
@@ -368,7 +371,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     public synchronized void export() {
         checkAndUpdateSubConfigs();
-
+        //判断是不是需要暴露，不需要就返回把
         if (!shouldExport()) {
             return;
         }
@@ -450,21 +453,33 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
+        //找到注册中心的全部地址
         List<URL> registryURLs = loadRegistries(true);
+        //根据协议，将服务暴露出去
         for (ProtocolConfig protocolConfig : protocols) {
+            //获取服务接口路径（包名+类名）
             String pathKey = URL.buildKey(getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), group, version);
+            //创建要暴露的服务模型
             ProviderModel providerModel = new ProviderModel(pathKey, ref, interfaceClass);
+            //初始化服务模型，就是放入一个要暴露出来的集合里面
             ApplicationModel.initProviderModel(pathKey, providerModel);
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
 
+    /**
+     * 把服务根据url注册中心地址和protocolConfig协议配置暴露出来
+     * @param protocolConfig
+     * @param registryURLs
+     */
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+        //获取协议的名字，比如dubbo，http，默认使用dubbo
         String name = protocolConfig.getName();
         if (StringUtils.isEmpty(name)) {
             name = DUBBO;
         }
 
+        //存放一些参数信息，比如版本号啊等等
         Map<String, String> map = new HashMap<String, String>();
         map.put(SIDE_KEY, PROVIDER_SIDE);
 
@@ -477,6 +492,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         appendParameters(map, provider);
         appendParameters(map, protocolConfig);
         appendParameters(map, this);
+        //这里是对方法级别的配置进行单独处理，没有对方法单独配置，就不管，用接口级别配置
         if (CollectionUtils.isNotEmpty(methods)) {
             for (MethodConfig method : methods) {
                 appendParameters(map, method, method.getName());
@@ -541,7 +557,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (revision != null && revision.length() > 0) {
                 map.put(REVISION_KEY, revision);
             }
-
+            //获取接口的所有方法
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 logger.warn("No method found in service interface " + interfaceClass.getName());
@@ -558,8 +574,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
         }
         // export service
+        //这里获取服务提供者的ip和端口
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
+        //将协议啥的各种信息拼装成一个url，协议+服务者ip开头
         URL url = new URL(name, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), map);
 
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
@@ -574,11 +592,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
             // export to local if the config is not remote (export to remote only when config is remote)
             if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
+                //本地暴露，就是开启injvm（本地服务，这是一个伪协议，不会开启端口，只用来内部调用），默认是开启的
                 exportLocal(url);
             }
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 if (CollectionUtils.isNotEmpty(registryURLs)) {
+                    //这里真正暴露到
                     for (URL registryURL : registryURLs) {
                         //if protocol is only injvm ,not register
                         if (LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
@@ -602,7 +622,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         if (StringUtils.isNotEmpty(proxy)) {
                             registryURL = registryURL.addParameter(PROXY_KEY, proxy);
                         }
-
+                        //获取invoker,默认javasssit字节码技术
                         Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString()));
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
@@ -635,6 +655,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @SuppressWarnings({"unchecked", "rawtypes"})
     /**
      * always export injvm
+     * injvm协议
      */
     private void exportLocal(URL url) {
         URL local = URLBuilder.from(url)
@@ -642,6 +663,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 .setHost(LOCALHOST_VALUE)
                 .setPort(0)
                 .build();
+        //创建一个injvm exporter，用来暴露injvm协议
         Exporter<?> exporter = protocol.export(
                 PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, local));
         exporters.add(exporter);
