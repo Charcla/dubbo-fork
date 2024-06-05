@@ -35,6 +35,12 @@ import java.util.List;
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 
+/**
+ * 这个类的主要功能是判断是否需要开启mock机制（封装这么一层是做这个用的）
+ * 如果需要开启则过滤出mockInvoker后执行服务降级
+ * 如果不需要去去调用下一个invoker
+ * @param <T>
+ */
 public class MockClusterInvoker<T> implements Invoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(MockClusterInvoker.class);
@@ -75,7 +81,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
         String value = directory.getUrl().getMethodParameter(invocation.getMethodName(), MOCK_KEY, Boolean.FALSE.toString()).trim();
         if (value.length() == 0 || "false".equalsIgnoreCase(value)) {
             //no mock
-            //没有mock逻辑，就调用其他比如FailoverClusterInvoker的执行逻辑
+            //没有mock逻辑，说明不需要执行降级，就调用其他比如FailoverClusterInvoker的执行逻辑
             result = this.invoker.invoke(invocation);
         } else if (value.startsWith("force")) {
             if (logger.isWarnEnabled()) {

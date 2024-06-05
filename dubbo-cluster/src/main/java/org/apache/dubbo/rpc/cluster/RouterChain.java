@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 /**
  * Router chain
+ * 这个用来存放某个服务下面的所有invokers
  */
 public class RouterChain<T> {
 

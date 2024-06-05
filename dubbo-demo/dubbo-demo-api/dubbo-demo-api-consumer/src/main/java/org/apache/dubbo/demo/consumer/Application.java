@@ -22,7 +22,9 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.demo.DemoService;
-import org.apache.dubbo.rpc.cluster.router.mock.MockInvokersSelector;
+import org.apache.dubbo.rpc.RpcContext;
+
+import java.util.HashMap;
 
 public class Application  {
 
@@ -31,10 +33,17 @@ public class Application  {
         reference.setApplication(new ApplicationConfig("dubbo-demo-api-consumer"));
 //        reference.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
 //        reference.setRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
-        reference.setRegistry(new RegistryConfig("nacos://81.68.105.245:8848"));
+        reference.setRegistry(new RegistryConfig("nacos://10.211.55.4:8848"));
+//        reference.setRegistry(new RegistryConfig("nacos://localhost:8848"));
         reference.setInterface(DemoService.class);
         reference.setCheck(false);
+        reference.setTimeout(6000000);
         DemoService service = reference.get();
+
+        HashMap<String, String> params = new HashMap<>();
+        params.put("a","a1");
+        params.put("b","b1");
+        RpcContext.getContext().setAttachment("param","zhangsan");
 
         String message = service.sayHello("dubbo");
         System.out.println(message);

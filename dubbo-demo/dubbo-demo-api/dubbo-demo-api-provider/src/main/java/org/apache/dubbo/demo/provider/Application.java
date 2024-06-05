@@ -22,17 +22,22 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.demo.DemoService2;
 
 public class Application {
     public static void main(String[] args) throws Exception {
-        ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
+        ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setApplication(new ApplicationConfig("dubbo-demo-api-provider"));
 //        service.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
 //        service.setRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
-        service.setRegistry(new RegistryConfig("nacos://81.68.105.245:8848"));
+        RegistryConfig registryConfig = new RegistryConfig("nacos://10.211.55.4:8848");
+
+        service.setRegistry(registryConfig);
+//        service.setRegistry(new RegistryConfig("nacos://localhost:8848"));
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
         service.export();
         System.in.read();
+        Thread.currentThread().wait();
     }
 }
