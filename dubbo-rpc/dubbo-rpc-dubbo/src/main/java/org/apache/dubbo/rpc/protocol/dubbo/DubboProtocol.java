@@ -283,6 +283,7 @@ public class DubboProtocol extends AbstractProtocol {
         URL url = invoker.getUrl();
 
         // export service.
+        //获取服务标识，由服务组名，服务名，服务版本号以及端口组成
         String key = serviceKey(url);
         DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
         exporterMap.put(key, exporter);
@@ -302,13 +303,13 @@ public class DubboProtocol extends AbstractProtocol {
                 stubServiceMethodsMap.put(url.getServiceKey(), stubServiceMethods);
             }
         }
-
+        //启动服务，就是开通网络端口介绍网络请求
         openServer(url);
         optimizeSerialization(url);
 
         return exporter;
     }
-
+    //开启服务端端口
     private void openServer(URL url) {
         // find server.
         String key = url.getAddress();
@@ -329,7 +330,7 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
     }
-
+    //创建netty服务端
     private ExchangeServer createServer(URL url) {
         url = URLBuilder.from(url)
                 // send readonly event when server closes, it's enabled by default

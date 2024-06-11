@@ -49,7 +49,7 @@ public class ProtocolFilterWrapper implements Protocol {
     }
 
 
-
+    //创建调用链路
     private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
         Invoker<T> last = invoker;
         List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);

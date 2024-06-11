@@ -455,7 +455,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private void doExportUrls() {
         //找到注册中心的全部地址
         List<URL> registryURLs = loadRegistries(true);
-        //根据协议，将服务暴露出去
+        //根据协议，将服务暴露出去，每一个协议单独去导出，支持多协议
         for (ProtocolConfig protocolConfig : protocols) {
             //获取服务接口路径（包名+类名）
             String pathKey = URL.buildKey(getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), group, version);
@@ -558,11 +558,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put(REVISION_KEY, revision);
             }
             //获取接口的所有方法
+            //Wrapper中包含接口的详细信息
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 logger.warn("No method found in service interface " + interfaceClass.getName());
                 map.put(METHODS_KEY, ANY_VALUE);
             } else {
+                //多个方法名用都好隔开
                 map.put(METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
             }
         }
@@ -577,7 +579,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         //这里获取服务提供者的ip和端口
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
+
         //将协议啥的各种信息拼装成一个url，协议+服务者ip开头
+        //这个url非常重要，dubbo中的配置信息都在这个url中，所有的扩展点都通过这个url来传递信息
         URL url = new URL(name, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), map);
 
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
