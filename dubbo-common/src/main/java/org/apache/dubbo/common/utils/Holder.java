@@ -18,6 +18,8 @@ package org.apache.dubbo.common.utils;
 
 /**
  * Helper Class for hold a value.
+ * 这个作用是用于持有目标对象，加了一层，为了避免双重检测指令冲排序，
+ * 这里面的value加了volatile，所以在业务层不需要加了，直接面向这个对象就行
  */
 public class Holder<T> {
 

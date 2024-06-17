@@ -53,6 +53,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PRE
 
 /**
  * Load dubbo extensions
+ * 这个类用来加载spi的实现类
+ * 每一个spi接口对应一个ExtensionLoader实现类
  * <ul>
  * <li>auto inject dependency extension </li>
  * <li>auto wrap extension in wrapper </li>
@@ -85,10 +87,15 @@ public class ExtensionLoader<T> {
     private final ExtensionFactory objectFactory;
 
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<>();
-    //存放已经缓存的class对象
+    //存放已经缓存的class对象（就是开发自己写的要扩展的实现类）
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<>();
+
+    /**
+     * 存放所有的holder
+     * key为txt文件中写的实现类的名字
+     */
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
     //存放有@Adaptive的扩展类
@@ -110,6 +117,12 @@ public class ExtensionLoader<T> {
         return type.isAnnotationPresent(SPI.class);
     }
 
+    /**
+     * 往容器中获取一个ExtensionLoader，如果没有则创建
+     * @param type
+     * @param <T>
+     * @return
+     */
     @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         //必须传入类型
@@ -306,7 +319,7 @@ public class ExtensionLoader<T> {
         Holder<Object> holder = getOrCreateHolder(name);
         return (T) holder.get();
     }
-
+    //根据key名字获取对应的holder，如果没有则创建
     private Holder<Object> getOrCreateHolder(String name) {
         //根据当前名称，从缓存中获取
         Holder<Object> holder = cachedInstances.get(name);
@@ -336,6 +349,7 @@ public class ExtensionLoader<T> {
     /**
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
      * will be thrown.
+     * 根据SPI接口定义的名字，获取这个接口的实现类
      */
     @SuppressWarnings("unchecked")
     public T getExtension(String name) {
@@ -348,6 +362,8 @@ public class ExtensionLoader<T> {
         //获取当前类的holdle
         final Holder<Object> holder = getOrCreateHolder(name);
         Object instance = holder.get();
+
+        //dubbo中随处可见的双重检查
         if (instance == null) {
             synchronized (holder) {
                 instance = holder.get();
@@ -527,7 +543,7 @@ public class ExtensionLoader<T> {
         }
         return new IllegalStateException(buf.toString());
     }
-
+    //创建spi接口的实例，name为配置文件中配置的实例的对象名
     @SuppressWarnings("unchecked")
     private T createExtension(String name) {
         //从已经加载好的集合中根据name来获取对应的class对象
@@ -544,7 +560,7 @@ public class ExtensionLoader<T> {
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             }
             //注入其他的扩展，用于扩展点和其他的扩展点互通
-            //就是这个扩展点可能会依赖其他的扩展点
+            //就是这个扩展点可能会依赖其他的扩展点，dubbo自己的简易版本的依赖注入
             injectExtension(instance);
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (CollectionUtils.isNotEmpty(wrapperClasses)) {
@@ -636,7 +652,7 @@ public class ExtensionLoader<T> {
         }
         return getExtensionClasses().get(name);
     }
-
+    //获取开发配置的所有spi的实现类
     private Map<String, Class<?>> getExtensionClasses() {
         //从缓存中获取加载的扩展类
         Map<String, Class<?>> classes = cachedClasses.get();
@@ -656,7 +672,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * synchronized in getExtensionClasses
+     * synchronized in getExtensionClasses去扫描所有的实现类并且加载到map
      * */
     private Map<String, Class<?>> loadExtensionClasses() {
         //加载默认的扩展实现
@@ -675,6 +691,7 @@ public class ExtensionLoader<T> {
 
     /**
      * extract and cache default extension name if exists
+     * 加载扩展类
      */
     private void cacheDefaultExtensionName() {
         //如果没有@Spi注解，则返回
