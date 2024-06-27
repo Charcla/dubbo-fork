@@ -18,7 +18,10 @@ package org.apache.dubbo.common.extension;
 
 /**
  * ExtensionFactory
- * 根据传入的扩展点类型和名字来获取扩展实现 ，这里是SPI中的具体实现挂钩
+ * 根据传入的扩展点类型和名字来获取扩展实现 ，类似认为是自己实现一个ioc
+ * 可以调用这个方法获取到实例
+ * 有SpringExtensionFactory：集成Spring，可以拿到spring中的bean
+ * SPIExtensionFactory：dubbo自身的ioc，拿到dubbo自己的维护的bean实例
  */
 @SPI
 public interface ExtensionFactory {

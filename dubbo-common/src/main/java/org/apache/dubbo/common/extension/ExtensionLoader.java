@@ -54,7 +54,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PRE
 /**
  * Load dubbo extensions
  * 这个类用来加载spi的实现类
- * 每一个spi接口对应一个ExtensionLoader实现类
+ * 每一个spi接口对应一个ExtensionLoader实现类,这个类用来查找，加载，创建，实例化所有的spi接口实现类
+ * 部分spi接口会有方法上添加@Adaptive注解，代表有些扩展不想在启动阶段就被加载，而是在运行时候根据参数进行加载
  * <ul>
  * <li>auto inject dependency extension </li>
  * <li>auto wrap extension in wrapper </li>
@@ -84,10 +85,11 @@ public class ExtensionLoader<T> {
 
     private final Class<?> type;
 
+    //ExtensionFactory，每个loader保留这个字段，可以通过这个对象拿到ioc中（spring、dubbo）的bean
     private final ExtensionFactory objectFactory;
 
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<>();
-    //存放已经缓存的class对象（就是开发自己写的要扩展的实现类）
+    //存放已经缓存的class对象（就是spi接口的实现类）
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<>();
@@ -492,7 +494,11 @@ public class ExtensionLoader<T> {
         }
     }
 
-    @SuppressWarnings("unchecked")//获取自适应扩展类
+    /**
+     * 获取自适应扩展类
+     * @return
+     */
+    @SuppressWarnings("unchecked")
     public T getAdaptiveExtension() {
         Object instance = cachedAdaptiveInstance.get();
         if (instance == null) {
@@ -543,7 +549,10 @@ public class ExtensionLoader<T> {
         }
         return new IllegalStateException(buf.toString());
     }
-    //创建spi接口的实例，name为配置文件中配置的实例的对象名
+
+    /**
+     * 创建spi接口实现类的实例，name为配置文件中配置的实例的对象名
+     */
     @SuppressWarnings("unchecked")
     private T createExtension(String name) {
         //从已经加载好的集合中根据name来获取对应的class对象
@@ -652,7 +661,8 @@ public class ExtensionLoader<T> {
         }
         return getExtensionClasses().get(name);
     }
-    //获取开发配置的所有spi的实现类
+
+    //获取配置的所有spi的实现类，如果没有，则去加载
     private Map<String, Class<?>> getExtensionClasses() {
         //从缓存中获取加载的扩展类
         Map<String, Class<?>> classes = cachedClasses.get();
@@ -672,7 +682,8 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * synchronized in getExtensionClasses去扫描所有的实现类并且加载到map
+     * synchronized in getExtensionClasses
+     * 去扫描所有meta-inf下面配置的所有实现类并且加载到map
      * */
     private Map<String, Class<?>> loadExtensionClasses() {
         //加载默认的扩展实现
@@ -713,6 +724,15 @@ public class ExtensionLoader<T> {
         }
     }
 
+    /**
+     * 根据路径和接口，去找到所有在meta-inf配置过的实现这个spi接口的实现类
+     * 扫描出来加载到缓存
+     * key：txt文件中配置的实现类的名称（=号的左边）
+     * value：实现类对应的class对象
+     * @param extensionClasses
+     * @param dir
+     * @param type
+     */
     private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type) {
         //路径+包名.接口名
         String fileName = dir + type;
