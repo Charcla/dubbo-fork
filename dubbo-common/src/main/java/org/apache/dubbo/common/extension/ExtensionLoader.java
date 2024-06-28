@@ -56,6 +56,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PRE
  * 这个类用来加载spi的实现类
  * 每一个spi接口对应一个ExtensionLoader实现类,这个类用来查找，加载，创建，实例化所有的spi接口实现类
  * 部分spi接口会有方法上添加@Adaptive注解，代表有些扩展不想在启动阶段就被加载，而是在运行时候根据参数进行加载
+ * 自适应扩展类：实现SPI接口的一个类，代码生成，类名一般为：spi接口名$Adaptive
  * <ul>
  * <li>auto inject dependency extension </li>
  * <li>auto wrap extension in wrapper </li>
@@ -99,6 +100,7 @@ public class ExtensionLoader<T> {
      * key为txt文件中写的实现类的名字
      */
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
+    //存放自适应扩展类的实例，类名称一般为：接口名$Adaptive
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
     //存放有@Adaptive的扩展类
     private volatile Class<?> cachedAdaptiveClass = null;
@@ -938,6 +940,7 @@ public class ExtensionLoader<T> {
     }
 
     private Class<?> getAdaptiveExtensionClass() {
+        //加载spi接口的实现类
         getExtensionClasses();
         if (cachedAdaptiveClass != null) {
             return cachedAdaptiveClass;
@@ -945,10 +948,17 @@ public class ExtensionLoader<T> {
         return cachedAdaptiveClass = createAdaptiveExtensionClass();
     }
 
+    /**
+     * 创建自适应扩展类
+     * @return
+     */
     private Class<?> createAdaptiveExtensionClass() {
+        //拼接出来类的字符串格式
         String code = new AdaptiveClassCodeGenerator(type, cachedDefaultName).generate();
         ClassLoader classLoader = findClassLoader();
+        //选择字节码生成器，默认javaassit
         org.apache.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
+        //编译出类，加载到jvm内存
         return compiler.compile(code, classLoader);
     }
 
