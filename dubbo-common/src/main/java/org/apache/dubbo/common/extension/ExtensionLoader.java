@@ -56,7 +56,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PRE
  * 这个类用来加载spi的实现类
  * 每一个spi接口对应一个ExtensionLoader实现类,这个类用来查找，加载，创建，实例化所有的spi接口实现类
  * 部分spi接口会有方法上添加@Adaptive注解，代表有些扩展不想在启动阶段就被加载，而是在运行时候根据参数进行加载
- * 自适应扩展类：实现SPI接口的一个类，代码生成，类名一般为：spi接口名$Adaptive
+ * 自适应扩展类：
+ * 实现SPI接口的一个类，代码生成，类名一般为：spi接口名$Adaptive
+ * 但是也有少数是代码写死的
  * <ul>
  * <li>auto inject dependency extension </li>
  * <li>auto wrap extension in wrapper </li>
@@ -79,7 +81,7 @@ public class ExtensionLoader<T> {
     private static final String DUBBO_INTERNAL_DIRECTORY = DUBBO_DIRECTORY + "internal/";
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
-
+    //类变量，存放所有的loader
     private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<>();
     //存放已经实例化完成的扩展类实例
     private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>();
@@ -115,7 +117,7 @@ public class ExtensionLoader<T> {
      * 如果是人工写的自适应类，类民为：Adaptive+接口名
      */
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
-    //存放有@Adaptive的扩展类
+    //存放有@Adaptive的扩展类的类对象
     private volatile Class<?> cachedAdaptiveClass = null;
     private String cachedDefaultName;
     private volatile Throwable createAdaptiveInstanceError;
@@ -818,7 +820,7 @@ public class ExtensionLoader<T> {
                     type + ", class line: " + clazz.getName() + "), class "
                     + clazz.getName() + " is not subtype of interface.");
         }
-        //如果包含了@Adaptive，就存储到缓存
+        //如果包含了@Adaptive，就存储到缓存，此注解加在类上面，说明是人工编写的自适应扩展类
         if (clazz.isAnnotationPresent(Adaptive.class)) {
             cacheAdaptiveClass(clazz);
         } else if (isWrapperClass(clazz)) {
@@ -952,12 +954,15 @@ public class ExtensionLoader<T> {
         }
     }
 
+    //获取自适应扩展类
     private Class<?> getAdaptiveExtensionClass() {
         //加载spi接口的实现类，从meta-inf目录查找
+        //如果在配置文件有显示配置@Adaptive，则会保存到cachedAdaptiveClass字段中
         getExtensionClasses();
         if (cachedAdaptiveClass != null) {
             return cachedAdaptiveClass;
         }
+        //没有显示配置，则利用字节码技术去创建
         return cachedAdaptiveClass = createAdaptiveExtensionClass();
     }
 
