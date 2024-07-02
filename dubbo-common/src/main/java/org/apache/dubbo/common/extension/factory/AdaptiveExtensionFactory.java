@@ -26,6 +26,8 @@ import java.util.List;
 
 /**
  * AdaptiveExtensionFactory
+ * ExtensionFactory的默认实现，这个类保存着ExtensionFactory的其他实现类，如spi和spring
+ * @Adaptive 加在类上面，表示这个类直接由开发编写完成，框架就不会为类生成代理类了
  */
 @Adaptive
 public class AdaptiveExtensionFactory implements ExtensionFactory {

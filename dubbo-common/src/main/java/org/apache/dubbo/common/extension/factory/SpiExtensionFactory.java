@@ -22,6 +22,7 @@ import org.apache.dubbo.common.extension.SPI;
 
 /**
  * SpiExtensionFactory
+ * spi的扩展点工厂类，可以从dubbo自身的容器拿到扩展点实例
  */
 public class SpiExtensionFactory implements ExtensionFactory {
 

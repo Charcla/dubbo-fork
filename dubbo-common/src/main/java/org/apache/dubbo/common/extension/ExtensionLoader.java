@@ -84,13 +84,22 @@ public class ExtensionLoader<T> {
     //存放已经实例化完成的扩展类实例
     private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>();
 
+    //spi接口的全限名称
     private final Class<?> type;
 
-    //ExtensionFactory，每个loader保留这个字段，可以通过这个对象拿到ioc中（spring、dubbo）的bean
+    /**
+     * ExtensionFactory，每个loader保留这个字段，可以通过这个对象拿到ioc中（spring、dubbo）的bean
+     * ExtensionFactory本身也会有，值为null
+     */
     private final ExtensionFactory objectFactory;
 
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<>();
-    //存放已经缓存的class对象（就是spi接口的实现类）
+
+    /**
+     * 存放已经缓存的class对象（就是spi接口的实现类）
+     * key：meta-inf中配置的key
+     * value：对应的class对象
+     */
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<>();
@@ -100,7 +109,11 @@ public class ExtensionLoader<T> {
      * key为txt文件中写的实现类的名字
      */
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
-    //存放自适应扩展类的实例，类名称一般为：接口名$Adaptive
+
+    /**
+     * 存放自适应扩展类的实例，类名称一般为：接口名$Adaptive
+     * 如果是人工写的自适应类，类民为：Adaptive+接口名
+     */
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
     //存放有@Adaptive的扩展类
     private volatile Class<?> cachedAdaptiveClass = null;
@@ -497,7 +510,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 获取自适应扩展类
+     * 获取自适应扩展类，如果没有则创建
      * @return
      */
     @SuppressWarnings("unchecked")
@@ -585,7 +598,7 @@ public class ExtensionLoader<T> {
                     type + ") couldn't be instantiated: " + t.getMessage(), t);
         }
     }
-
+    //dubbo自身的依赖注入，
     private T injectExtension(T instance) {
 
         if (objectFactory == null) {
@@ -940,7 +953,7 @@ public class ExtensionLoader<T> {
     }
 
     private Class<?> getAdaptiveExtensionClass() {
-        //加载spi接口的实现类
+        //加载spi接口的实现类，从meta-inf目录查找
         getExtensionClasses();
         if (cachedAdaptiveClass != null) {
             return cachedAdaptiveClass;

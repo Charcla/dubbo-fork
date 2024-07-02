@@ -36,6 +36,7 @@ import java.util.Set;
 
 /**
  * SpringExtensionFactory
+ * 整合了spring的容器，获取spring ioc中的容器的bean实例
  */
 public class SpringExtensionFactory implements ExtensionFactory {
     private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);

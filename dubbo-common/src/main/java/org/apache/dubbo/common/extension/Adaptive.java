@@ -26,7 +26,11 @@ import java.lang.annotation.Target;
 
 /**
  * Provide helpful information for {@link ExtensionLoader} to inject dependency extension instance.
- *
+ * 这个注解用来识别固定已知类和未知扩展类
+ * 加在类上面：表示这个是人工实现的自适应扩展，是固定的，
+ *      比如：AdaptiveCompiler，框架只支持Javassist和JdkCompiler
+ *      比如：AdaptiveExtensionFactory，框架只支持spi和spring
+ * 加在方法上：由框架自动生成和编译一个动态的Adpative类，用于spi，因为spi的类是可以由开发自定义
  * @see ExtensionLoader
  * @see URL
  */
