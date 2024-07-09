@@ -1,8 +1,8 @@
-package org.apache.dubbo.demo.spi;
+package org.apache.dubbo.demo.spi.adaptive;
 
 import org.apache.dubbo.common.URL;
 
-public class RaceCarMaker implements CarMaker{
+public class RaceCarMaker implements CarMaker {
 
     WheelMaker wheelMaker;
 
@@ -12,6 +12,7 @@ public class RaceCarMaker implements CarMaker{
 
     @Override
     public Car makeCar(URL url) {
-        return null;
+        Wheel wheel = wheelMaker.makeWheel(url);
+        return new RaceCar(wheel);
     }
 }

@@ -34,6 +34,7 @@ import java.util.regex.Matcher;
 
 /**
  * Wrapper.
+ * 用于“包裹”目标类
  */
 public abstract class Wrapper {
     private static final Map<Class<?>, Wrapper> WRAPPER_MAP = new ConcurrentHashMap<Class<?>, Wrapper>(); //class wrapper map
@@ -121,6 +122,11 @@ public abstract class Wrapper {
         return ret;
     }
 
+    /**
+     * 创建一个wraper类
+     * @param c
+     * @return
+     */
     private static Wrapper makeWrapper(Class<?> c) {
         if (c.isPrimitive()) {
             throw new IllegalArgumentException("Can not create wrapper for primitive type: " + c);
@@ -129,17 +135,34 @@ public abstract class Wrapper {
         String name = c.getName();
         ClassLoader cl = ClassUtils.getClassLoader(c);
 
+        //这里分别创建如下3个方法
         StringBuilder c1 = new StringBuilder("public void setPropertyValue(Object o, String n, Object v){ ");
         StringBuilder c2 = new StringBuilder("public Object getPropertyValue(Object o, String n){ ");
         StringBuilder c3 = new StringBuilder("public Object invokeMethod(Object o, String n, Class[] p, Object[] v) throws " + InvocationTargetException.class.getName() + "{ ");
 
+        //生成方法体
         c1.append(name).append(" w; try{ w = ((").append(name).append(")$1); }catch(Throwable e){ throw new IllegalArgumentException(e); }");
         c2.append(name).append(" w; try{ w = ((").append(name).append(")$1); }catch(Throwable e){ throw new IllegalArgumentException(e); }");
         c3.append(name).append(" w; try{ w = ((").append(name).append(")$1); }catch(Throwable e){ throw new IllegalArgumentException(e); }");
 
+        /**
+         * 存储成员变量名和类型
+         * key：变量名
+         * value：变量的class类型
+         */
         Map<String, Class<?>> pts = new HashMap<>(); // <property name, property types>
+
+        /**
+         * 用于存储方法描述信息
+         * key：方法的描述信息
+         * value：方法对应的method对象
+         */
         Map<String, Method> ms = new LinkedHashMap<>(); // <method desc, Method instance>
+
+        //所有的方法名
         List<String> mns = new ArrayList<>(); // method names.
+
+        //用于存储“定义在当前类中的方法”的名称，就是方法名
         List<String> dmns = new ArrayList<>(); // declaring method names.
 
         // get all public field.

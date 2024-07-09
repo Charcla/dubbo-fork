@@ -36,11 +36,17 @@ import static org.apache.dubbo.rpc.Constants.EXPORTER_LISTENER_KEY;
 
 /**
  * ListenerProtocol
+ * 协议监听器包装器
  */
 public class ProtocolListenerWrapper implements Protocol {
 
     private final Protocol protocol;
 
+    /**
+     * 唯一的构造函数，必须要传入一个Protocol的实现类
+     * extensionLoader判断一个类是不是封装类，就是看这个类的构造函数有没有一个spi接口的参数，有点抽象
+     * @param protocol
+     */
     public ProtocolListenerWrapper(Protocol protocol) {
         if (protocol == null) {
             throw new IllegalArgumentException("protocol == null");

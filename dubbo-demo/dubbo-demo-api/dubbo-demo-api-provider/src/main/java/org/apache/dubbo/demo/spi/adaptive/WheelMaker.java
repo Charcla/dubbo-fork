@@ -1,4 +1,4 @@
-package org.apache.dubbo.demo.spi;
+package org.apache.dubbo.demo.spi.adaptive;
 
 import org.apache.dubbo.common.URL;
 

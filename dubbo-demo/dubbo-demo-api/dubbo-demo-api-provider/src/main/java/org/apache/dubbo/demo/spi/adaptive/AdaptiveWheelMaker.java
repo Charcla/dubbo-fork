@@ -1,4 +1,4 @@
-package org.apache.dubbo.demo.spi;
+package org.apache.dubbo.demo.spi.adaptive;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -6,7 +6,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 /**
  * 本类是一个代理类，与传统的代理逻辑不同，此类所代理的对象是在makeWheel方法中通过SPI机制加载得到的
  */
-public class AdaptiveWheelMaker implements WheelMaker{
+public class AdaptiveWheelMaker implements WheelMaker {
     @Override
     public Wheel makeWheel(URL url) {
 

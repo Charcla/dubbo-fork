@@ -122,6 +122,11 @@ public class ExtensionLoader<T> {
     private String cachedDefaultName;
     private volatile Throwable createAdaptiveInstanceError;
 
+    /**
+     * 存放当前接口的包装类
+     * 这个wrapper类的机制类似与拦截器， 会在实现类之前调用
+     * 这个wrapper是concurrentHashSet保存的，没有顺序
+     */
     private Set<Class<?>> cachedWrapperClasses;
 
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();
@@ -588,6 +593,9 @@ public class ExtensionLoader<T> {
             //注入其他的扩展，用于扩展点和其他的扩展点互通
             //就是这个扩展点可能会依赖其他的扩展点，dubbo自己的简易版本的依赖注入
             injectExtension(instance);
+
+            //进行wrapper的处理，如果这个spi接口有封装类，那么这里就进行封装
+            //所以最后保存下来的实例，是封装后的实例，并不一定真是这个实现类的实例
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (CollectionUtils.isNotEmpty(wrapperClasses)) {
                 for (Class<?> wrapperClass : wrapperClasses) {
@@ -600,7 +608,7 @@ public class ExtensionLoader<T> {
                     type + ") couldn't be instantiated: " + t.getMessage(), t);
         }
     }
-    //dubbo自身的依赖注入，
+    //dubbo自身的依赖注入，只能通过set方法注入
     private T injectExtension(T instance) {
 
         if (objectFactory == null) {
@@ -919,6 +927,7 @@ public class ExtensionLoader<T> {
 
     /**
      * test if clazz is a wrapper class
+     * 判断这个class对象是不是封装类型的对象
      * <p>
      * which has Constructor with given class type as its only argument
      */

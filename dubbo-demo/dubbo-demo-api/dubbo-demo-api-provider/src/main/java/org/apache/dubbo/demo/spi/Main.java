@@ -6,6 +6,11 @@ public class Main {
 
     public static void main(String[] args) {
 
+        spi1();
+
+    }
+
+    private static void spi1(){
         ExtensionLoader<Robot> extensionLoader =
                 ExtensionLoader.getExtensionLoader(Robot.class);
         Robot optimusPrime = extensionLoader.getExtension("optimusPrime");
@@ -15,5 +20,9 @@ public class Main {
         bumblebee.sayHello();
 
         System.out.println();
+    }
+
+    private static void spi2(){
+
     }
 }
