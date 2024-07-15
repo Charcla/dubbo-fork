@@ -85,6 +85,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
 /**
  * RegistryDirectory
+ * 封装需要注册中心的一些信息
  */
 public class RegistryDirectory<T> extends AbstractDirectory<T> implements NotifyListener {
 
@@ -727,7 +728,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         ConsumerConfigurationListener() {
             this.initWith(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX);
         }
-
+        //增加监听器，服务端的信息变动
         void addNotifyListener(RegistryDirectory listener) {
             this.listeners.add(listener);
         }

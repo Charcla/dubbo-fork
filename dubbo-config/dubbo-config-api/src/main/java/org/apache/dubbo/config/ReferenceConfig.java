@@ -134,6 +134,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     /**
      * The url for peer-to-peer invocation
+     * 这个url保存点对点的调用
      */
     private String url;
 
@@ -325,7 +326,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             throw new IllegalArgumentException("Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(REGISTER_IP_KEY, hostToRegistry);
-        //创建代理类
+        //开始引用
         ref = createProxy(map);
 
         String serviceKey = URL.buildKey(interfaceName, group, version);
@@ -347,8 +348,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return new ConsumerModel(serviceKey, serviceInterface, ref, methods, attributes);
     }
 
+    /**
+     * 创建代理对象、构建invoker
+     * @param map
+     * @return
+     */
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
+        //判断是不是injvm调用
         if (shouldJvmRefer(map)) {
             URL url = new URL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(map);
             invoker = REF_PROTOCOL.refer(interfaceClass, url);
@@ -357,7 +364,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         } else {
             urls.clear(); // reference retry init will add url to urls, lead to OOM
+            //url不为空，开发可能是为了点对点调用
             if (url != null && url.length() > 0) { // user specified URL, could be peer-to-peer address, or register center's address.
+                //分割多个url
                 String[] us = SEMICOLON_SPLIT_PATTERN.split(url);
                 if (us != null && us.length > 0) {
                     for (String u : us) {
@@ -374,8 +383,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             } else { // assemble URL from register center's configuration
                 // if protocols not injvm checkRegistry
+                //注册到注册中心
                 if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())){
                     checkRegistry();
+                    //加载注册中心的url
                     List<URL> us = loadRegistries(false);
                     if (CollectionUtils.isNotEmpty(us)) {
                         for (URL u : us) {
@@ -391,10 +402,12 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     }
                 }
             }
-            //单注册中心
+            //单注册中心或者服务直连
             if (urls.size() == 1) {
+                //构建invoker实例
                 invoker = REF_PROTOCOL.refer(interfaceClass, urls.get(0));
             } else {
+                //多注册中心或者多直连的情况
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
                 URL registryURL = null;
                 for (URL url : urls) {
@@ -440,7 +453,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * 3. otherwise, check scope parameter
      * 4. if scope is not specified but the target service is provided in the same JVM, then prefer to make the local
      * call, which is the default behavior
-     * 判断释放需要injvm引用
+     * 判断是否需要injvm引用
      */
     protected boolean shouldJvmRefer(Map<String, String> map) {
         URL tmpUrl = new URL("temp", "localhost", 0, map);

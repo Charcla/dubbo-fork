@@ -225,7 +225,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     ConcurrentMap<Holder, FailedNotifiedTask> getFailedNotified() {
         return failedNotified;
     }
-
+    //注册实例
     @Override
     public void register(URL url) {
         super.register(url);
@@ -285,7 +285,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             addFailedUnregistered(url);
         }
     }
-
+    //订阅这个url
     @Override
     public void subscribe(URL url, NotifyListener listener) {
         super.subscribe(url, listener);
