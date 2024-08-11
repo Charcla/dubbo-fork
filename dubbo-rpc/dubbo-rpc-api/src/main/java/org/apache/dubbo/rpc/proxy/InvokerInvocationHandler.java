@@ -34,7 +34,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
     public InvokerInvocationHandler(Invoker<?> handler) {
         this.invoker = handler;
     }
-
+    //开始rpc调用
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();

@@ -37,6 +37,13 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     private final Map<String, Exporter<?>> exporterMap;
 
+    /**
+     * 构造函数
+     * @param type 接口的class类
+     * @param url
+     * @param key 接口的全类名
+     * @param exporterMap 缓存了本地暴露的服务，后续的本地调用，就是去这个map里面找到服务进行调用
+     */
     InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
         super(type, url);
         this.key = key;
@@ -52,14 +59,16 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
             return super.isAvailable();
         }
     }
-
+    //injvm真正调用的逻辑
     @Override
     public Result doInvoke(Invocation invocation) throws Throwable {
+        //从缓存中获取到这个url对应的实现类
         Exporter<?> exporter = InjvmProtocol.getExporter(exporterMap, getUrl());
         if (exporter == null) {
             throw new RpcException("Service [" + key + "] not found.");
         }
         RpcContext.getContext().setRemoteAddress(LOCALHOST_VALUE, 0);
+        //去调用服务实现类对应的wrapper的invokeMethod方法，这个方法里面再去调用服务真正的方法
         return exporter.getInvoker().invoke(invocation);
     }
 }

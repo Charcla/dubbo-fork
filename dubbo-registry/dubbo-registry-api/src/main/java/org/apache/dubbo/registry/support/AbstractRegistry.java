@@ -418,7 +418,7 @@ public abstract class AbstractRegistry implements Registry {
             listener.notify(categoryList);
             // We will update our cache file after each notification.
             // When our Registry has a subscribe failure due to network jitter, we can return at least the existing cache URL.
-            saveProperties(url);
+            saveProperties(url);  //保存到本地缓存
         }
     }
 

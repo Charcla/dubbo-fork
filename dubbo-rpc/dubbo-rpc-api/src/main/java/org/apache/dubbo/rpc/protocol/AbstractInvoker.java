@@ -124,7 +124,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     public String toString() {
         return getInterface() + " -> " + (getUrl() == null ? "" : getUrl().toString());
     }
-
+    
     @Override
     public Result invoke(Invocation inv) throws RpcException {
         // if invoker is destroyed due to address refresh from registry, let's allow the current invoke to proceed

@@ -209,9 +209,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     @Override
     public synchronized void notify(List<URL> urls) {
         Map<String, List<URL>> categoryUrls = urls.stream()
-                .filter(Objects::nonNull)
-                .filter(this::isValidCategory)
-                .filter(this::isNotCompatibleFor26x)
+                .filter(Objects::nonNull)   //过滤掉为null的元素
+                .filter(this::isValidCategory)  //过滤掉不可用分类元素
+                .filter(this::isNotCompatibleFor26x) // 过滤掉不兼容2.6版本的元素
                 .collect(Collectors.groupingBy(url -> {
                     if (UrlUtils.isConfigurator(url)) {
                         return CONFIGURATORS_CATEGORY;
@@ -249,8 +249,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * <li>If the list of incoming invokerUrl is empty, It means that the rule is only a override rule or a route
      * rule, which needs to be re-contrasted to decide whether to re-reference.</li>
      * </ol>
-     *
+     * 更新本地的invoker列表
      * @param invokerUrls this parameter can't be null
+     *
      */
     // TODO: 2017/8/31 FIXME The thread pool should be used to refresh the address, otherwise the task may be accumulated.
     private void refreshInvoker(List<URL> invokerUrls) {
@@ -258,26 +259,38 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         if (invokerUrls.size() == 1
                 && invokerUrls.get(0) != null
-                && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
+                && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) { //判断新的url是否有以empty://开头，这个开头基本是停止服务的场景
+            //禁止远程调用
             this.forbidden = true; // Forbid to access
             this.invokers = Collections.emptyList();
             routerChain.setInvokers(this.invokers);
+            //将缓存中的所有invoker删除
             destroyAllInvokers(); // Close all invokers
         } else {
+            //允许远程访问
             this.forbidden = false; // Allow to access
+
+            //先保存老的缓存的值
             Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
             if (invokerUrls == Collections.<URL>emptyList()) {
                 invokerUrls = new ArrayList<>();
             }
+
+            //如果新的url为空，但是老的缓存还在，这种情况可能是网络发生了抖动，导致注册不成功，这种情况会直接使用老的缓存中的invoker
             if (invokerUrls.isEmpty() && this.cachedInvokerUrls != null) {
                 invokerUrls.addAll(this.cachedInvokerUrls);
             } else {
                 this.cachedInvokerUrls = new HashSet<>();
                 this.cachedInvokerUrls.addAll(invokerUrls);//Cached invoker urls, convenient for comparison
             }
+
+            //没有可用的invoker，直接返回
             if (invokerUrls.isEmpty()) {
                 return;
             }
+
+
+            //根据原有的缓存列表，如果以及有了就直接返回，并且老列表删除，没有直接创建新的invoker
             Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
 
             /**
@@ -294,14 +307,18 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 return;
             }
 
+            //拿到最新的可用的invoker列表
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
             // pre-route and build cache, notice that route cache should build on original Invoker list.
             // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
             routerChain.setInvokers(newInvokers);
             this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
+
+            //老缓存替换为新缓存
             this.urlInvokerMap = newUrlInvokerMap;
 
             try {
+                //删除老map中剩余的invoker
                 destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
             } catch (Exception e) {
                 logger.warn("destroyUnusedInvokers error. ", e);
@@ -366,7 +383,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     /**
      * Turn urls into invokers, and if url has been refer, will not re-reference.
-     *
+     * 从缓存map中获取原先的invoker，根据这个urls，
+     * 如果存在则返回，并且从原先的map删除
+     * 如果不存在，则创建一个invoker
      * @param urls
      * @return invokers
      */
@@ -517,7 +536,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     /**
      * Check whether the invoker in the cache needs to be destroyed
      * If set attribute of url: refer.autodestroy=false, the invokers will only increase without decreasing,there may be a refer leak
-     *
+     * 删除老缓存中在新缓存中没有的invoker
      * @param oldUrlInvokerMap
      * @param newUrlInvokerMap
      */
