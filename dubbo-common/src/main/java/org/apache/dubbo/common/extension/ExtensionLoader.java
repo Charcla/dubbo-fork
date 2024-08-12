@@ -239,7 +239,7 @@ public class ExtensionLoader<T> {
 
     /**
      * Get activate extensions.
-     *
+     * 根据url，参数值，获取
      * @param url    url
      * @param values extension point names
      * @param group  group

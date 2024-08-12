@@ -376,6 +376,14 @@ public class RegistryProtocol implements Protocol {
         return key;
     }
 
+    /**
+     * 服务引用
+     * @param type Service class 服务接口名
+     * @param url  URL address for the remote service 对应的注册中心
+     * @param <T>
+     * @return
+     * @throws RpcException
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
