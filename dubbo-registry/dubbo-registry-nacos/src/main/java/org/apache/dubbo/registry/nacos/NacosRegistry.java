@@ -166,7 +166,7 @@ public class NacosRegistry extends FailbackRegistry {
 
     @Override
     public void doSubscribe(final URL url, final NotifyListener listener) {
-        Set<String> serviceNames = getServiceNames(url, listener);
+        Set<String> serviceNames = getServiceNames(url, listener); //获取接口名字，providers:org.apache.dubbo.demo.XXXX
         doSubscribe(url, listener, serviceNames);
     }
 

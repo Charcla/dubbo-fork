@@ -386,7 +386,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 //注册到注册中心
                 if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())){
                     checkRegistry();
-                    //加载注册中心的url
+                    //加载注册中心的url，这里的url是以registry协议开头的url
                     List<URL> us = loadRegistries(false);
                     if (CollectionUtils.isNotEmpty(us)) {
                         for (URL u : us) {
@@ -458,12 +458,15 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     protected boolean shouldJvmRefer(Map<String, String> map) {
         URL tmpUrl = new URL("temp", "localhost", 0, map);
         boolean isJvmRefer;
+        //判断配置的属性
         if (isInjvm() == null) {
             // if a url is specified, don't do local reference
+            //如果url配置了地址，那这种情况是属于直连服务端
             if (url != null && url.length() > 0) {
                 isJvmRefer = false;
             } else {
                 // by default, reference local service if there is
+
                 isJvmRefer = InjvmProtocol.getInjvmProtocol().isInjvmRefer(tmpUrl);
             }
         } else {

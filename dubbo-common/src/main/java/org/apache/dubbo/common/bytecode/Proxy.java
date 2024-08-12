@@ -58,7 +58,7 @@ public abstract class Proxy {
 
     /**
      * Get proxy.
-     *
+     * 创建代理类proxy的class
      * @param ics interface class array.
      * @return Proxy instance.
      */

@@ -126,6 +126,7 @@ public class ExtensionLoader<T> {
      * 存放当前接口的包装类
      * 这个wrapper类的机制类似与拦截器， 会在实现类之前调用
      * 这个wrapper是concurrentHashSet保存的，没有顺序
+     * 保存了ProtocolFilterWrapper、ProtocolListenerWrapper
      */
     private Set<Class<?>> cachedWrapperClasses;
 

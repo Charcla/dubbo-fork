@@ -36,8 +36,10 @@ public class Application  {
         reference.setRegistry(new RegistryConfig("nacos://10.211.55.4:8848"));
 //        reference.setRegistry(new RegistryConfig("nacos://localhost:8848"));
         reference.setInterface(DemoService.class);
+//        reference.setScope("injvm");
         reference.setCheck(false);
         reference.setTimeout(6000000);
+//        reference.setInjvm(true);
         DemoService service = reference.get();
 
         HashMap<String, String> params = new HashMap<>();
@@ -47,5 +49,9 @@ public class Application  {
 
         String message = service.sayHello("dubbo");
         System.out.println(message);
+
+        while (true){
+            Thread.sleep(100);
+        }
     }
 }
